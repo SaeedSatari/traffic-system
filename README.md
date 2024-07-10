@@ -19,5 +19,12 @@
 ```bash
     git clone https://github.com/SaeedSatari/traffic-system.git
 ```
-### Testing:
-http://localhost:8080/api/v1/greeting
+### Swagger:
+http://localhost:8080/swagger-ui/index.html#/
+
+### How to test the api using swagger:
+
+- Signup with your email, firstname and lastname
+- Login using your email and password
+- Use the accessToken from the Login response and Authorize using the swagger Authorize button
+- Test greeting api, you should get "I'm running secure... ;)" message
