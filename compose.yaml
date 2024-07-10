@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    image: 'traffic-service:latest'
+    build:
+      context: .
+    container_name: traffic-container
+    restart: on-failure
+    depends_on:
+      - db
+    environment:
+      SPRING_APPLICATION_JSON: '{
+            "spring.datasource.url"  : "jdbc:postgresql://db:5432/trafficdb",
+            "spring.datasource.username" : "admin",
+            "spring.datasource.password" : "admin",
+            "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
+            "spring.jpa.hibernate.ddl-auto" : "update"
+          }'
+    ports:
+      - "8080:8080"
+    volumes:
+      - .m2:/root/.m2
+    stdin_open: true
+    tty: true
+
+  db:
+    image: postgres
+    container_name: db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=trafficdb
+    ports:
+      - "5435:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+volumes:
+  db:
