@@ -1,15 +1,20 @@
 package com.softwaveco.its.controller;
 
+
+import com.softwaveco.its.controller.request.ApplicantRequest;
+import com.softwaveco.its.controller.response.ApplicantResponse;
+import com.softwaveco.its.controller.response.MessageResponse;
 import com.softwaveco.its.data.entity.Applicant;
-import com.softwaveco.its.data.entity.User;
 import com.softwaveco.its.service.ApplicantService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,37 +26,54 @@ public class ApplicantController {
     private final ApplicantService applicantService;
 
     @GetMapping
-    public List<Applicant> getAllApplicants() {
-        return applicantService.getAllApplicants();
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "get list applicants")
+    public List<ApplicantResponse> getAllApplicants() {
+        log.info("getAllApplicants API...");
+        List<Applicant> applicants = applicantService.getAllApplicants();
+        return applicants.stream()
+                .map(this::mapToApplicantResponse)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Applicant> getApplicantById(@PathVariable String id) {
-        return applicantService.getApplicantById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "get a applicant")
+    public ApplicantResponse getApplicantById(@PathVariable String id) {
+        log.info("getApplicantById API...");
+        Applicant applicant = applicantService.getApplicantById(id);
+        return mapToApplicantResponse(applicant);
     }
 
     @PostMapping
-    public Applicant createApplicant(@RequestBody Applicant applicant, @RequestBody User user) {
-        return applicantService.registerApplicant(applicant, user);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Applicant> updateApplicant(@PathVariable String id, @RequestBody Applicant applicantDetails) {
-        return applicantService.getApplicantById(id)
-                .map(applicant -> {
-                    applicant.setDob(applicantDetails.getDob());
-                    applicant.setRemarks(applicantDetails.getRemarks());
-                    Applicant updatedApplicant = applicantService.saveApplicant(applicant);
-                    return ResponseEntity.ok(updatedApplicant);
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "create a new applicant")
+    public ApplicantResponse createApplicant(@RequestBody ApplicantRequest request) {
+        log.info("createApplicant API...");
+        Applicant applicant = applicantService.registerApplicant(request.getUserId(), request.getDob(), request.getRemarks());
+        return mapToApplicantResponse(applicant);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteApplicant(@PathVariable String id) {
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "delete a supervisor")
+    public MessageResponse deleteApplicant(@PathVariable String id) {
+        log.info("deleteApplicant API...");
         applicantService.deleteApplicant(id);
-        return ResponseEntity.noContent().build();
+        return MessageResponse.builder()
+                .message("Supervisor deleted")
+                .httpStatus(HttpStatus.OK)
+                .build();
+    }
+
+    private ApplicantResponse mapToApplicantResponse(Applicant applicant) {
+        return ApplicantResponse.builder()
+                .id(applicant.getId())
+                .username(applicant.getUser().getUsername())
+                .firstName(applicant.getUser().getFirstName())
+                .lastName(applicant.getUser().getLastName())
+                .dob(applicant.getDob())
+                .remarks(applicant.getRemarks())
+                .build();
     }
 }

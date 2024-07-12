@@ -23,8 +23,8 @@ public class SupervisorService {
     public List<Supervisor> getAllSupervisors() {
         List<Supervisor> supervisors = supervisorRepository.findAll();
         if (supervisors.isEmpty()) {
-            log.error("There is no supervisor");
-            throw new EntityNotFoundException("There is no supervisor");
+            log.error("There is no supervisors");
+            throw new EntityNotFoundException("There is no supervisors");
         }
         return supervisors;
     }

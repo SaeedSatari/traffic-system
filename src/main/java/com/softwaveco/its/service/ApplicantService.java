@@ -4,39 +4,63 @@ import com.softwaveco.its.data.entity.Applicant;
 import com.softwaveco.its.data.entity.User;
 import com.softwaveco.its.data.repository.ApplicantRepository;
 import com.softwaveco.its.data.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class ApplicantService {
-    @Autowired
-    private ApplicantRepository applicantRepository;
+    private final ApplicantRepository applicantRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public List<Applicant> getAllApplicants() {
-        return applicantRepository.findAll();
+        List<Applicant> applicants = applicantRepository.findAll();
+        if (applicants.isEmpty()) {
+            log.error("There is no applicants");
+            throw new EntityNotFoundException("There is no applicants");
+        }
+        return applicants;
     }
 
-    public Optional<Applicant> getApplicantById(String id) {
-        return applicantRepository.findById(id);
+    public Applicant getApplicantById(String id) {
+        Optional<Applicant> optionalApplicant = applicantRepository.findById(id);
+        if (optionalApplicant.isPresent()) {
+            return optionalApplicant.get();
+        } else {
+            log.error("Applicant {} not found", id);
+            throw new EntityNotFoundException("Applicant not found");
+        }
     }
 
-    public Applicant saveApplicant(Applicant applicant) {
-        return applicantRepository.save(applicant);
-    }
 
+    @Transactional
     public void deleteApplicant(String id) {
-        applicantRepository.deleteById(id);
+        Applicant applicant = getApplicantById(id);
+        applicantRepository.delete(applicant);
     }
 
-    public Applicant registerApplicant(Applicant applicant, User user) {
-        userRepository.save(user);
-        applicant.setUser(user);
-        return applicantRepository.save(applicant);
+    @Transactional
+    public Applicant registerApplicant(String userId, Date dob, String remarks) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isPresent()) {
+            Applicant applicant = Applicant.builder()
+                    .user(optionalUser.get())
+                    .dob(dob)
+                    .remarks(remarks)
+                    .build();
+            return applicantRepository.save(applicant);
+        } else {
+            log.error("User {} not found", userId);
+            throw new EntityNotFoundException("User Not Found");
+        }
     }
 }

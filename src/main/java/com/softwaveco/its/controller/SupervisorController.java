@@ -56,7 +56,7 @@ public class SupervisorController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "delete a supervisor")
     public MessageResponse deleteSupervisor(@PathVariable String id) {
         log.info("deleteSupervisor API...");

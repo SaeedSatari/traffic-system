@@ -20,7 +20,7 @@ public class Applicant {
     @Column(length = 36, nullable = false, updatable = false)
     private String id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
