@@ -19,7 +19,6 @@ import java.util.Optional;
 @Slf4j
 public class ApplicantService {
     private final ApplicantRepository applicantRepository;
-
     private final UserRepository userRepository;
 
     public List<Applicant> getAllApplicants() {
@@ -40,7 +39,6 @@ public class ApplicantService {
             throw new EntityNotFoundException("Applicant not found");
         }
     }
-
 
     @Transactional
     public void deleteApplicant(String id) {

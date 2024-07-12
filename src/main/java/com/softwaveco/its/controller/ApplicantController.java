@@ -5,6 +5,7 @@ import com.softwaveco.its.controller.request.ApplicantRequest;
 import com.softwaveco.its.controller.response.ApplicantResponse;
 import com.softwaveco.its.controller.response.MessageResponse;
 import com.softwaveco.its.data.entity.Applicant;
+import com.softwaveco.its.mapper.ApplicantMapper;
 import com.softwaveco.its.service.ApplicantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 @SecurityRequirement(name = "bearerAuth")
 public class ApplicantController {
     private final ApplicantService applicantService;
+    private final ApplicantMapper applicantMapper;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -32,7 +34,7 @@ public class ApplicantController {
         log.info("getAllApplicants API...");
         List<Applicant> applicants = applicantService.getAllApplicants();
         return applicants.stream()
-                .map(this::mapToApplicantResponse)
+                .map(applicantMapper::mapToApplicantResponse)
                 .collect(Collectors.toList());
     }
 
@@ -42,7 +44,7 @@ public class ApplicantController {
     public ApplicantResponse getApplicantById(@PathVariable String id) {
         log.info("getApplicantById API...");
         Applicant applicant = applicantService.getApplicantById(id);
-        return mapToApplicantResponse(applicant);
+        return applicantMapper.mapToApplicantResponse(applicant);
     }
 
     @PostMapping
@@ -51,7 +53,7 @@ public class ApplicantController {
     public ApplicantResponse createApplicant(@RequestBody ApplicantRequest request) {
         log.info("createApplicant API...");
         Applicant applicant = applicantService.registerApplicant(request.getUserId(), request.getDob(), request.getRemarks());
-        return mapToApplicantResponse(applicant);
+        return applicantMapper.mapToApplicantResponse(applicant);
     }
 
     @DeleteMapping("/{id}")
@@ -63,17 +65,6 @@ public class ApplicantController {
         return MessageResponse.builder()
                 .message("Supervisor deleted")
                 .httpStatus(HttpStatus.OK)
-                .build();
-    }
-
-    private ApplicantResponse mapToApplicantResponse(Applicant applicant) {
-        return ApplicantResponse.builder()
-                .id(applicant.getId())
-                .username(applicant.getUser().getUsername())
-                .firstName(applicant.getUser().getFirstName())
-                .lastName(applicant.getUser().getLastName())
-                .dob(applicant.getDob())
-                .remarks(applicant.getRemarks())
                 .build();
     }
 }
