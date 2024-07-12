@@ -1,6 +1,7 @@
 package com.softwaveco.its.controller;
 
 import com.softwaveco.its.controller.request.SupervisorRequest;
+import com.softwaveco.its.controller.response.MessageResponse;
 import com.softwaveco.its.controller.response.SupervisorResponse;
 import com.softwaveco.its.data.entity.Supervisor;
 import com.softwaveco.its.service.SupervisorService;
@@ -9,10 +10,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,15 +26,23 @@ public class SupervisorController {
     private final SupervisorService supervisorService;
 
     @GetMapping
-    public List<Supervisor> getAllSupervisors() {
-        return supervisorService.getAllSupervisors();
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "get list supervisors")
+    public List<SupervisorResponse> getAllSupervisors() {
+        log.info("getAllSupervisors API...");
+        List<Supervisor> supervisors = supervisorService.getAllSupervisors();
+        return supervisors.stream()
+                .map(this::mapToSupervisorResponse)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Supervisor> getSupervisorById(@PathVariable String id) {
-        return supervisorService.getSupervisorById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "get a supervisor")
+    public SupervisorResponse getSupervisorById(@PathVariable String id) {
+        log.info("getSupervisorById API...");
+        Supervisor supervisor = supervisorService.getSupervisorById(id);
+        return mapToSupervisorResponse(supervisor);
     }
 
     @PostMapping
@@ -43,6 +52,22 @@ public class SupervisorController {
         log.info("createSupervisor API...");
         Supervisor supervisor = supervisorService.registerSupervisor(request.getUserId(), request.getDepartment(),
                 request.getDesignation());
+        return mapToSupervisorResponse(supervisor);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "delete a supervisor")
+    public MessageResponse deleteSupervisor(@PathVariable String id) {
+        log.info("deleteSupervisor API...");
+        supervisorService.deleteSupervisor(id);
+        return MessageResponse.builder()
+                .message("Supervisor deleted")
+                .httpStatus(HttpStatus.OK)
+                .build();
+    }
+
+    private SupervisorResponse mapToSupervisorResponse(Supervisor supervisor) {
         return SupervisorResponse.builder()
                 .id(supervisor.getId())
                 .username(supervisor.getUser().getUsername())
@@ -51,23 +76,5 @@ public class SupervisorController {
                 .department(supervisor.getDepartment())
                 .designation(supervisor.getDesignation())
                 .build();
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Supervisor> updateSupervisor(@PathVariable String id, @RequestBody Supervisor supervisorDetails) {
-        return supervisorService.getSupervisorById(id)
-                .map(supervisor -> {
-                    supervisor.setDepartment(supervisorDetails.getDepartment());
-                    supervisor.setDesignation(supervisorDetails.getDesignation());
-                    Supervisor updatedSupervisor = supervisorService.saveSupervisor(supervisor);
-                    return ResponseEntity.ok(updatedSupervisor);
-                })
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSupervisor(@PathVariable String id) {
-        supervisorService.deleteSupervisor(id);
-        return ResponseEntity.noContent().build();
     }
 }

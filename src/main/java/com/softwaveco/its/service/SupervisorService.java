@@ -21,19 +21,28 @@ public class SupervisorService {
     private final UserRepository userRepository;
 
     public List<Supervisor> getAllSupervisors() {
-        return supervisorRepository.findAll();
+        List<Supervisor> supervisors = supervisorRepository.findAll();
+        if (supervisors.isEmpty()) {
+            log.error("There is no supervisor");
+            throw new EntityNotFoundException("There is no supervisor");
+        }
+        return supervisors;
     }
 
-    public Optional<Supervisor> getSupervisorById(String id) {
-        return supervisorRepository.findById(id);
+    public Supervisor getSupervisorById(String id) {
+        Optional<Supervisor> optionalSupervisor = supervisorRepository.findById(id);
+        if (optionalSupervisor.isPresent()) {
+            return optionalSupervisor.get();
+        } else {
+            log.error("Supervisor {} not found", id);
+            throw new EntityNotFoundException("Supervisor not found");
+        }
     }
 
-    public Supervisor saveSupervisor(Supervisor supervisor) {
-        return supervisorRepository.save(supervisor);
-    }
-
+    @Transactional
     public void deleteSupervisor(String id) {
-        supervisorRepository.deleteById(id);
+        Supervisor supervisor = getSupervisorById(id);
+        supervisorRepository.delete(supervisor);
     }
 
     @Transactional

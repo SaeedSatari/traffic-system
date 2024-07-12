@@ -26,7 +26,7 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "get list of the users")
+    @Operation(summary = "get list users")
     public List<UserDetailsResponse> getUserList() {
         log.info("getUserList API...");
         List<User> users = userService.listUsers();
