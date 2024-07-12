@@ -65,4 +65,6 @@ public class User {
     private String city;
 
     private String postcode;
+
+    private String civilNumber;
 }

@@ -13,9 +13,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
-import java.util.Optional;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -43,19 +40,4 @@ public class AuthService {
             throw new ServiceException("Error in saveUser: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    public void verifyUser(String username, String token) {
-        Optional<User> optionalUser = userRepository.findByUsernameAndVerificationToken(username, token);
-        if (optionalUser.isPresent()) {
-            User foundUser = optionalUser.get();
-            foundUser.setVerified(true);
-            foundUser.setVerificationToken(null);
-            userRepository.save(foundUser);
-        } else {
-            log.error("User {} with given verification token not found", username);
-            throw new EntityNotFoundException("User " + username + " with given verification token not found.");
-        }
-    }
-
-
 }

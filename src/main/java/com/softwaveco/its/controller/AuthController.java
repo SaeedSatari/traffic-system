@@ -73,16 +73,4 @@ public class AuthController {
                 .httpStatus(HttpStatus.CREATED)
                 .build();
     }
-
-    @PostMapping("/verify")
-    public MessageResponse verifyUser(@RequestParam String token) {
-        log.info("verifyUser API...");
-        jwtUtils.validateJwtToken(token);
-        String username = jwtUtils.getUserNameFromJwtToken(token);
-        authService.verifyUser(username, token);
-        return MessageResponse.builder()
-                .message("User verified successfully!")
-                .httpStatus(HttpStatus.OK)
-                .build();
-    }
 }

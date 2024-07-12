@@ -1,10 +1,9 @@
 package com.softwaveco.its.enums;
 
 public enum UserRole {
-    ROLE_SUPER_ADMIN,
-    ROLE_OWNER,
-    ROLE_ADMIN,
-    ROLE_CONTRIBUTOR;
+    ROLE_USER,
+    ROLE_MODERATOR,
+    ROLE_ADMIN;
 
     public static UserRole fromString(String role) {
         for (UserRole userRole : UserRole.values()) {

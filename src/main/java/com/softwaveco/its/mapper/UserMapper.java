@@ -12,7 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 @Component
@@ -32,19 +35,22 @@ public class UserMapper {
                 .roles(mapToRole(request.getRole()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
+                .address(request.getAddress())
+                .apartment(request.getApartment())
+                .country(request.getCountry())
+                .phone(request.getPhone())
+                .state(request.getState())
+                .city(request.getCity())
+                .postcode(request.getPostcode())
+                .civilNumber(request.getCivilNumber())
                 .build();
     }
 
-    public String hashPassword(String password) {
-        return encoder.encode(password);
-    }
-
-    private Set<Role> mapToRole(Set<String> strings) {
+    private Set<Role> mapToRole(Set<UserRole> strings) {
         Set<Role> roles = new HashSet<>();
-        for (String roleName : strings) {
-            Optional<Role> role = roleRepository.findByName(UserRole.valueOf(roleName));
-            role.ifPresent(roles::add);
-        }
+        strings.stream()
+                .map(roleRepository::findByName)
+                .forEach(role -> role.ifPresent(roles::add));
         return roles;
     }
 
