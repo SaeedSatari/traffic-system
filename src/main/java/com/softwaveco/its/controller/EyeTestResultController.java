@@ -47,7 +47,7 @@ public class EyeTestResultController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "assign eye test to applicant")
+    @Operation(summary = "submit eye test result")
     public EyeTestResultResponse createEyeTestResult(@RequestBody EyeTestResultRequest request) {
         log.info("createEyeTestResult API...");
         EyeTestResult eyeTestResult = eyeTestResultService.saveEyeTestResult(request.getApplicantId(), request.getTestDate(),
