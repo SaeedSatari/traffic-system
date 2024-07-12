@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -38,13 +39,15 @@ public class EyeTestResultService {
         }
     }
 
+    @Transactional
     public EyeTestResult saveEyeTestResult(String applicantId, Date testDate, String result, String notes) {
         Applicant applicant = applicantService.getApplicantById(applicantId);
-        return EyeTestResult.builder()
+        EyeTestResult eyeTestResult = EyeTestResult.builder()
                 .applicant(applicant)
                 .result(result)
                 .testDate(testDate)
                 .notes(notes)
                 .build();
+        return eyeTestResultRepository.save(eyeTestResult);
     }
 }
