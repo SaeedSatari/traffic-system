@@ -3,6 +3,7 @@ package com.softwaveco.its.controller;
 import com.softwaveco.its.controller.request.ApplicationRequest;
 import com.softwaveco.its.controller.response.ApplicationResponse;
 import com.softwaveco.its.data.entity.Application;
+import com.softwaveco.its.enums.ApplicationStatus;
 import com.softwaveco.its.mapper.ApplicantMapper;
 import com.softwaveco.its.service.ApplicationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,18 +26,25 @@ public class ApplicationController {
     private final ApplicationService applicationService;
     private final ApplicantMapper applicantMapper;
 
-//    @GetMapping
-//    public List<ApplicationDTO> getAllApplications() {
-//        return applicationService.getAllApplications();
-//    }
-//
-//    // Get application by ID
-//    @GetMapping("/{id}")
-//    public ResponseEntity<ApplicationDTO> getApplicationById(@PathVariable String id) {
-//        return applicationService.getApplicationById(id)
-//                .map(ResponseEntity::ok)
-//                .orElseGet(() -> ResponseEntity.notFound().build());
-//    }
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "get list applications")
+    public List<ApplicationResponse> getAllApplications() {
+        log.info("getAllApplications API...");
+        List<Application> applications = applicationService.getAllApplications();
+        return applications.stream()
+                .map(this::mapToApplicationResponse)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "get an application")
+    public ApplicationResponse getApplicationById(@PathVariable String id) {
+        log.info("getApplicationById API...");
+        Application application = applicationService.getApplicationById(id);
+        return mapToApplicationResponse(application);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -45,32 +56,14 @@ public class ApplicationController {
         return mapToApplicationResponse(application);
     }
 
-//    // Update an existing application
-//    @PutMapping("/{id}")
-//    public ResponseEntity<ApplicationDTO> updateApplication(
-//            @PathVariable String id,
-//            @RequestBody ApplicationDTO applicationDTO) {
-//        return applicationService.updateApplication(id, applicationDTO)
-//                .map(ResponseEntity::ok)
-//                .orElseGet(() -> ResponseEntity.notFound().build());
-//    }
-//
-//    // Delete an application
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> deleteApplication(@PathVariable String id) {
-//        applicationService.deleteApplication(id);
-//        return ResponseEntity.noContent().build();
-//    }
-//
-//    // Change the status of an application
-//    @PutMapping("/{id}/status")
-//    public ResponseEntity<ApplicationDTO> updateApplicationStatus(
-//            @PathVariable String id,
-//            @RequestParam String status) {
-//        return applicationService.updateApplicationStatus(id, status)
-//                .map(ResponseEntity::ok)
-//                .orElseGet(() -> ResponseEntity.notFound().build());
-//    }
+    @PutMapping("/{id}/status")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "update the application status")
+    public ApplicationResponse updateApplicationStatus(@PathVariable String id, @RequestParam ApplicationStatus status) {
+        log.info("updateApplicationStatus API...");
+        Application application = applicationService.updateApplicationStatus(id, status.name());
+        return mapToApplicationResponse(application);
+    }
 
     private ApplicationResponse mapToApplicationResponse(Application application) {
         return ApplicationResponse.builder()

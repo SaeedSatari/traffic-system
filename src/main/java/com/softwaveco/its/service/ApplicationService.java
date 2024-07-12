@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
@@ -22,16 +23,22 @@ public class ApplicationService {
     private final ApplicantService applicantService;
 
     public List<Application> getAllApplications() {
-        return applicationRepository.findAll();
+        List<Application> applications = applicationRepository.findAll();
+        if (applications.isEmpty()) {
+            log.error("There is no applications");
+            throw new EntityNotFoundException("There is no applications");
+        }
+        return applications;
     }
 
-    public Optional<Application> getApplicationById(String id) {
-        return applicationRepository.findById(id);
-    }
-
-
-    public void deleteApplication(String id) {
-        applicationRepository.deleteById(id);
+    public Application getApplicationById(String id) {
+        Optional<Application> optionalTest = applicationRepository.findById(id);
+        if (optionalTest.isPresent()) {
+            return optionalTest.get();
+        } else {
+            log.error("Application {} not found", id);
+            throw new EntityNotFoundException("Application not found");
+        }
     }
 
     @Transactional
@@ -45,6 +52,13 @@ public class ApplicationService {
                 .licenseType(licenseType.name())
                 .applicationDate(applicationDate)
                 .build();
+        return applicationRepository.save(application);
+    }
+
+    @Transactional
+    public Application updateApplicationStatus(String id, String status) {
+        Application application = getApplicationById(id);
+        application.setStatus(status);
         return applicationRepository.save(application);
     }
 }
